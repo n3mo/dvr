@@ -1,15 +1,17 @@
 #! /usr/local/bin/csi -s
 
-;; (use shell)
-;; (use args)
-;; (use posix)
 (require-extension shell)
 (require-extension args)
 (require-extension posix)
 
+;;; Files ending in the following extensions will be
+;;; included in all operations. Add accordingly
 (define valid-extensions
   '("flv" "mov" "mp4" "wmv" "mkv" "mov" "avi" "mpg" "swf"))
 
+;;; The script expects a user-supplied target path at runtime.
+;;; If no path is supplied, the following default is used. For
+;;; more general audiences, this should probably be changed to "."
 (define default-path "~/media/Television/")
 
 ;;; This does all the heavy lifting. It recursively scans the supplied
@@ -22,7 +24,8 @@
 			    (lambda (ext) (string-suffix? ext path))
 			    valid-extensions)))))
 
-;;; You can print the available files with this
+;;; You can print the available files found with (file-list) using
+;;; this procedure
 (define (print-videos file-paths)
   (let ((video-names 
 	 (map (lambda (path) (pathname-file path))
@@ -31,17 +34,23 @@
 	      (sort (map string-titlecase video-names) (lambda (a b) (string< a b))))))
 
 ;;; Computes how much memory all the video files are consuming
-;;; on the HDD. The value returned is the total memory in GB
+;;; on the HDD. The value returned is the total memory in GB.
+;;; Due to a bug (possibly in an underlying C library), the procedure
+;;; (file-paths) fails on large file sizes. This procedure should be
+;;; called with an exception handler.
 (define (memory-used file-paths)
   (round (/ (apply + (map file-size file-paths)) (expt 1024 3))))
 
 ;;; Available space on HDD. This is an ugly hack, but it returns
-;;; the available space on the hard drive (in GB)
+;;; the available space on the hard drive (in GB). I imagine this
+;;; may fail on computers with multiple (or oddly named) HDDs.
 (define (memory-free)
   (round (string->number
 	  (irregex-replace "\n"
 			   (capture ("df | grep '^/dev/' | awk '{s+=$4} END {print s/1048576}'"))))))
 
+;;; This needs to be explicitly called for anything to happen
+;;; at runtime. (main) is called below. 
 (define (main)
   (begin
     (define myargs (command-line-arguments))
@@ -67,43 +76,4 @@
 ;;; This gets things done
 (main)
 
-;;; ########################################
-;;; LEGACY CODE
-;;; ########################################
-
-;; (define file-list 
-;;   (find-files "." (lambda (path) (or 
-;; 				  (string-suffix? ".flv" path)
-;; 				  (string-suffix? ".mp4" path)
-;; 				  (string-suffix? ".wmv" path)
-;; 				  (string-suffix? ".mkv" path)
-;; 				  (string-suffix? ".mov" path)))))
-
-;;; Manual, debugging version that works on PWD
-;; (define file-list
-;;   (find-files "."
-;; 	      (lambda (path)		
-;; 		(member #t (map
-;; 			    (lambda (ext) (string-suffix? ext path))
-;; 			    valid-extensions)))))
-
-
-;;; THIS SHOULDN'T BE NEEDED...Then you sort by finding the files that
-;;; are movies.  Something like this:
-;; (for-each 
-;;  (lambda (file) 
-;;    (if (irregex-search "mkv" file) (print file))) 
-;;  tmp)
-
-;; (define (main args)
-;;   (begin
-;;     (if (null? args)
-;; 	(define video-file-paths (file-list default-path))
-;; 	(define video-file-paths (file-list (car args))))
-;;     (newline)
-;;     (print-videos video-file-paths)
-;;     ;; Show the total space used?
-;;     (printf "~%~A Videos Total. ~AGB used (~AGB free).~%~%"
-;; 	     (length video-file-paths)
-;; 	     (memory-used video-file-paths)
-;; 	     (memory-free))))
+;;; end of file dvr.scm
