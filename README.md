@@ -11,7 +11,7 @@ Prerequisites
 
 Currently, this software is not bundled as a self-contained package. Thus, you will need [Chicken Scheme](http://www.call-cc.org/) installed on your system. This software was developed and tested on Chicken 4.8.0 and 4.7.0.6. Your mileage may vary on other versions. 
 
-Additionally, you will need the following Eggs installed:
+Additionally, you will need the following [Eggs](http://wiki.call-cc.org/eggs) installed:
 * shell
 * args
 * posix
@@ -21,7 +21,7 @@ Interpreted
 Installation is simple once Chicken is properly installed:
 
 1. Clone the git repository into a directory of your choice
-2. Ensure that the file dvr.scm is executable (chmod +x scm)
+2. Ensure that the file dvr.scm is executable (chmod +x dvr.scm)
 
 Compiled
 --------
@@ -29,7 +29,7 @@ For better performance, you should consider compiling the script to a binary exe
 
 `csc dvr.scm -o dvr`
 
-The resulting file "dvr" should be placed somewhere on your PATH.
+The resulting executable "dvr" should be placed somewhere on your PATH.
 
 Usage
 =====
