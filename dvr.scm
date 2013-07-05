@@ -31,7 +31,7 @@
 (define (usage)
  (with-output-to-port (current-error-port)
    (lambda ()
-     (print "Usage: " (car (argv)) " [options...] [files...]")
+     (print "Usage: " (car (argv)) " [directory] [options...]")
      (newline)
      (print (args:usage opts))
      (print "Report bugs to nemo1211 at gmail.")))
@@ -112,7 +112,7 @@
 ;;; options opens up other possibilities.
 (receive (options operands)
     (args:parse (command-line-arguments) opts)
-  (main))
+  (handle-exceptions exn (usage) (main)))
 
 ;;; This gets things done
 ;; (main)
