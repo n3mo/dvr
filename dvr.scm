@@ -3,6 +3,7 @@
 (require-extension shell)
 (require-extension args)
 (require-extension posix)
+(require-extension files)
 
 ;;; Files ending in the following extensions will be
 ;;; included in all operations. Add accordingly
@@ -14,6 +15,28 @@
 ;;; more general audiences, this should probably be changed to "."
 (define default-path "~/media/Television/")
 
+;;; Location of trash directory on this system
+(define trash-path "~/.local/share/Trash/files/")
+
+(define opts
+ (list (args:make-option (d delete) #:none "Manage files"
+         (delete-files))
+       (args:make-option (h help)   #:none "Help information"
+         (usage))))
+
+(define (delete-files)
+  (print "File deleted! (not really)")
+  (exit 0))
+
+(define (usage)
+ (with-output-to-port (current-error-port)
+   (lambda ()
+     (print "Usage: " (car (argv)) " [options...] [files...]")
+     (newline)
+     (print (args:usage opts))
+     (print "Report bugs to nemo1211 at gmail.")))
+ (exit 1))
+
 ;;; This does all the heavy lifting. It recursively scans the supplied
 ;;; directory, returning a list of file paths that end in any
 ;;; extension contained in valid-extensions. 
@@ -23,6 +46,17 @@
 		(member #t (map
 			    (lambda (ext) (string-suffix? ext path))
 			    valid-extensions)))))
+
+;;; You can safely send videos to the trash, whereupon they can be
+;;; restored later (rather than simply removing them for good with
+;;; "rm"). Note that most videos I use have accompanying subtitle
+;;; files, info files, etc. with shared filenames that differ only in
+;;; their extension. This procedure moves all such similarly-named
+;;; files to the trash for you. You only need to specify one file
+;;; (video-path) to move them all.
+(define (trash-video video-path)
+  (let ((wild-files (pathname-replace-extension video-path "*")))
+    (system (conc "mv " wild-files " " trash-path))))
 
 ;;; You can print the available files found with (file-list) using
 ;;; this procedure
@@ -73,7 +107,15 @@
 					 (memory-used video-file-paths)
 					 (memory-free))))))
 
+;;; This gets things done. If you run this with no command line
+;;; options, your available files are printed to the screen. Including
+;;; options opens up other possibilities.
+(receive (options operands)
+    (args:parse (command-line-arguments) opts)
+  (main))
+
 ;;; This gets things done
-(main)
+;; (main)
+
 
 ;;; end of file dvr.scm
