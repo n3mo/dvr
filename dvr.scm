@@ -18,16 +18,46 @@
 ;;; Location of trash directory on this system
 (define trash-path "~/.local/share/Trash/files/")
 
+;;; This function strips operands (rather than "-" prefixed options)
+;;; from the command line arguments and returns a list of all operands
+(define (list-operands myargs)
+  (cond
+   ((null? myargs) '())
+   ((string-prefix? "-" (car myargs))
+    (list-operands (cdr myargs)))
+   (else (cons (car myargs) (list-operands (cdr myargs))))))
+
+;;; Given a list of file paths "filelist" and a number "num", this
+;;; returns the num-th file path from the list
+(define (get-file filelist num)
+  (if (> num (length filelist))
+      (print "Too large")
+      (begin
+	(define (file-by-num mylist counter)
+	  (if (eq? counter num) (car mylist)
+	      (file-by-num (cdr mylist) (+ counter 1))))
+	(file-by-num filelist 1))))
+
+;;; The following list contains all defined command line options
+;;; available to the user. For example, (h help) makes all of the
+;;; following equivalent options available at runtime: -h, -help, --h,
+;;; --help. These are used by the "args" egg.
 (define opts
- (list (args:make-option (d delete) #:none "Manage files"
-         (delete-files))
+ (list (args:make-option (d delete) #:none "Delete file(s)"
+         (delete-videos))
        (args:make-option (h help)   #:none "Help information"
          (usage))))
 
-(define (delete-files)
-  (print "File deleted! (not really)")
-  (exit 0))
 
+;; ;;; This is a temporary place holder for the deletion functionality I
+;; ;;; plan to add...
+;; (define (delete-files)
+;;   (print "File deleted! (not really)")
+;;   (exit 0))
+
+;;; This procedure is called whenever the user specifies the help
+;;; option at runtime OR whenever an unexpected command line option or
+;;; operand is passed to this script.
 (define (usage)
  (with-output-to-port (current-error-port)
    (lambda ()
@@ -59,13 +89,36 @@
     (system (conc "mv " wild-files " " trash-path))))
 
 ;;; You can print the available files found with (file-list) using
-;;; this procedure
-(define (print-videos file-paths)
+;;; this procedure. If numberp is true, each video file printed is
+;;; preceded with a unique number (useful for managing files, e.g.,
+;;; for interactively deleting files)
+(define (print-videos file-paths #!optional (numberp #f))
   (let ((video-names 
 	 (map (lambda (path) (pathname-file path))
 	      file-paths)))
-    (for-each (lambda (l) (print l))
-	      (sort (map string-titlecase video-names) (lambda (a b) (string< a b))))))
+    (if numberp
+	;; Add numbering...
+	(let ((filecount 0))
+	  (for-each
+	   (lambda (l) 
+	     (begin 
+	       (set! filecount (+ filecount 1))
+	       (display (conc "[" filecount "] "))
+	       (print l)))
+	   (sort-videos video-names)))
+	;; Else don't...
+	(for-each (lambda (l) (print l)) (sort-videos video-names)))))
+
+;;; Sort video file names alphabetically
+(define (sort-videos myvideos)
+  (sort (map string-titlecase myvideos)
+	(lambda (a b) (string< a b))))
+
+;;; Sort video file names IGNORING paths
+(define (sort-videos-no-path myvideos)
+  (sort (map string-titlecase myvideos)
+	(lambda (a b) (string< (pathname-file a) (pathname-file b)))))
+
 
 ;;; Computes how much memory all the video files are consuming
 ;;; on the HDD. The value returned is the total memory in GB.
@@ -83,11 +136,32 @@
 	  (irregex-replace "\n"
 			   (capture ("df | grep '^/dev/' | awk '{s+=$4} END {print s/1048576}'"))))))
 
+;;; Delete files procedure
+(define (delete-videos)
+  (begin
+    (define myargs (list-operands (command-line-arguments)))
+    (if (null? myargs)
+	(define video-file-paths (file-list default-path))
+	(define video-file-paths (file-list (car myargs))))
+    (newline)
+    (print-videos video-file-paths #t)
+    (newline)
+    (display "Enter number of file to delete (0 to abort): ")
+    (let ((sorted-videos (sort-videos-no-path video-file-paths))
+	  (target-file (string->number (read-line))))
+      (newline)
+      (printf "Moving ~s to trash\n\n" 
+	      (pathname-file
+	       (get-file sorted-videos target-file)))
+      (trash-video (get-file sorted-videos target-file))
+      (exit 0))))
+
+
 ;;; This needs to be explicitly called for anything to happen
 ;;; at runtime. (main) is called below. 
 (define (main)
   (begin
-    (define myargs (command-line-arguments))
+    (define myargs (list-operands (command-line-arguments)))
     (if (null? myargs)
 	(define video-file-paths (file-list default-path))
 	(define video-file-paths (file-list (car myargs))))
