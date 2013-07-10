@@ -15,8 +15,13 @@
 ;;; more general audiences, this should probably be changed to "."
 (define default-path "~/media/Television/")
 
-;;; Location of trash directory on this system
-(define trash-path "~/.local/share/Trash/files/")
+;;; Location of trash directory on this system. For now, this assumes
+;;; that you're either using Mac OS X or linux...
+(define trash-path
+  (if (string=? "darwin" (string-downcase 
+			  (car (system-information))))
+	"~/.Trash/"
+	"~/.local/share/Trash/files/"))
 
 ;;; This function strips operands (rather than "-" prefixed options)
 ;;; from the command line arguments and returns a list of all operands
@@ -153,7 +158,11 @@
       (printf "Moving ~s to trash\n\n" 
 	      (pathname-file
 	       (get-file sorted-videos target-file)))
-      (trash-video (get-file sorted-videos target-file))
+      (if (eq? target-file 0)
+	  (begin
+	    (print "Aborted: 0 files changed")
+	    (exit 1))
+	  (trash-video (get-file sorted-videos target-file)))
       (exit 0))))
 
 
