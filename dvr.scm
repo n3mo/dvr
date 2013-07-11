@@ -115,14 +115,19 @@
 	(for-each (lambda (l) (print l)) (sort-videos video-names)))))
 
 ;;; Sort video file names alphabetically
+;; (define (sort-videos myvideos)
+;;   (sort (map string-titlecase myvideos)
+;; 	(lambda (a b) (string< a b))))
 (define (sort-videos myvideos)
-  (sort (map string-titlecase myvideos)
-	(lambda (a b) (string< a b))))
+  (sort myvideos (lambda (a b) (string< a b))))
 
 ;;; Sort video file names IGNORING paths
+;; (define (sort-videos-no-path myvideos)
+;;   (sort (map string-titlecase myvideos)
+;; 	(lambda (a b) (string< (pathname-file a) (pathname-file b)))))
 (define (sort-videos-no-path myvideos)
-  (sort (map string-titlecase myvideos)
-	(lambda (a b) (string< (pathname-file a) (pathname-file b)))))
+  (sort myvideos (lambda (a b) (string< (pathname-file a)
+					(pathname-file b))))) 
 
 
 ;;; Computes how much memory all the video files are consuming
@@ -155,15 +160,18 @@
     (let ((sorted-videos (sort-videos-no-path video-file-paths))
 	  (target-file (string->number (read-line))))
       (newline)
-      (printf "Moving ~s to trash\n\n" 
-	      (pathname-file
-	       (get-file sorted-videos target-file)))
-      (if (eq? target-file 0)
-	  (begin
-	    (print "Aborted: 0 files changed")
-	    (exit 1))
-	  (trash-video (get-file sorted-videos target-file)))
-      (exit 0))))
+      (cond ((and (> target-file 0) (<= target-file (length video-file-paths)))
+	     (begin
+	       (printf "Moving ~s to trash\n\n" 
+		       (pathname-file
+			(get-file sorted-videos target-file)))
+	       (trash-video (get-file sorted-videos target-file))
+	       (exit 0)))
+	    (else
+	     (begin
+	       (print "Aborted: 0 files changed")
+	       (newline)
+	       (exit 1)))))))
 
 
 ;;; This needs to be explicitly called for anything to happen
