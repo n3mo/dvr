@@ -1,7 +1,7 @@
 dvr
 ===
 
-A tool for quickly listing and managing video files spread across a file system. The program quickly searches (recursively) for any video files within a specified file system. The resulting list is printed to the terminal in sorted order, followed by summary statistics (the number of files found, their total size, and the remaining available space on the HDD).
+A tool for quickly listing and managing video files spread across a file system. The program quickly searches (recursively) for any video files within a specified file system. The resulting list is printed to the terminal in sorted order, followed by summary statistics (the number of files found, their total size, and the remaining available space on the HDD). Files can also be quickly moved to the trash. When trashing videos, the program also trashes files in the same directory with the same name (but different extensions). This allows the user trash all subtitle and related info files along with the video file in one easy step.
 
 Installation
 ============
@@ -38,3 +38,13 @@ Assuming you have compiled to the file "dvr", usage is as follows (if you would 
 The expected syntax is `dvr /path/to/videos`
 
 If the optional path is unspecified, the default path "~/media/Television" is used.
+
+To interactively trash video files (and their related subtitle & info files), use the delete option:
+
+`dvr /path/to/videos -d`
+
+You will then be prompted to select one or more files by number (separate multiple file numbers by spaces). Enter 0 (zero) to abort the trashing process.
+
+You can see help information at any time with
+
+`dvr -h`
