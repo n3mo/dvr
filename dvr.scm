@@ -66,7 +66,7 @@
 (define (usage)
  (with-output-to-port (current-error-port)
    (lambda ()
-     (print "Usage: " (car (argv)) " [directory] [options...]")
+     (print "Usage: dvr [directory] [options...]")
      (newline)
      (print (args:usage opts))
      (print "Report bugs to nemo1211 at gmail.")))
@@ -156,22 +156,30 @@
     (newline)
     (print-videos video-file-paths #t)
     (newline)
-    (display "Enter number of file to delete (0 to abort): ")
+    (display "Enter file number(s) to delete, separated by spaces (0 to abort): ")
     (let ((sorted-videos (sort-videos-no-path video-file-paths))
-	  (target-file (string->number (read-line))))
+	  (target-files (map string->number (string-split (read-line)))))
       (newline)
-      (cond ((and (> target-file 0) (<= target-file (length video-file-paths)))
-	     (begin
-	       (printf "Moving ~s to trash\n\n" 
-		       (pathname-file
-			(get-file sorted-videos target-file)))
-	       (trash-video (get-file sorted-videos target-file))
-	       (exit 0)))
-	    (else
-	     (begin
-	       (print "Aborted: 0 files changed")
-	       (newline)
-	       (exit 1)))))))
+      (if (memq 0 target-files)
+	  (begin
+	    (print "Aborted: 0 files changed")
+	    (newline)
+	    (exit 1))
+	  (for-each 
+	   (lambda (target-file)
+	     (cond ((and (> target-file 0) (<= target-file (length video-file-paths)))
+		    (begin
+		      (printf "Moving ~s to trash\n" 
+			      (pathname-file
+			       (get-file sorted-videos target-file)))
+		      (trash-video (get-file sorted-videos target-file))))
+		   (else
+		    (begin
+		      (print "Aborted: 0 files changed")
+		      (newline)))))
+	   target-files))
+      (newline)
+      (exit 0))))
 
 
 ;;; This needs to be explicitly called for anything to happen
