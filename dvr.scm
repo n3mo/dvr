@@ -1,9 +1,40 @@
 #! /usr/local/bin/csi -s
+;;; dvr.scm --- Video file management for Chicken Scheme
+
+;; Copyright 2013, Nicholas M. Van Horn
+
+;; Author: Nicholas M. Van Horn <vanhorn.nm@gmail.com>
+;; Keywords: dvr video scheme chicken
+;; Version: 1.0
+
+;; This file is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 3, or (at your option)
+;; any later version.
+
+;; This file is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with GNU Emacs; see the file COPYING. If not, write to
+;; the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+;; Boston, MA 02111-1307, USA. (or visit http://www.gnu.org/licenses/)
+;;
+
+;;; Commentary:
+
+;;; This program provides a simple and efficient command line
+;;; interface for quickly listing and managing video files stored in
+;;; nested directories on a file system. Run dvr.scm -h for
+;;; information on how to use the program.
 
 (require-extension shell)
 (require-extension args)
 (require-extension posix)
 (require-extension files)
+(require-extension regex)
 
 ;;; Files ending in the following extensions will be
 ;;; included in all operations. Add accordingly
@@ -53,13 +84,6 @@
        (args:make-option (h help)   #:none "Help information"
          (usage))))
 
-
-;; ;;; This is a temporary place holder for the deletion functionality I
-;; ;;; plan to add...
-;; (define (delete-files)
-;;   (print "File deleted! (not really)")
-;;   (exit 0))
-
 ;;; This procedure is called whenever the user specifies the help
 ;;; option at runtime OR whenever an unexpected command line option or
 ;;; operand is passed to this script.
@@ -69,6 +93,15 @@
      (print "Usage: dvr [directory] [options...]")
      (newline)
      (print (args:usage opts))
+     (print "dvr prints a recursive list of all video files")
+     (print "available in [directory]. By including the -d option,")
+     (print "dvr allows for interactive deletion of video files.")
+     (print "Files are moved to the trash.\n")
+     (print "dvr treats collections of related files as a single unit.")
+     (print "Accompanying files (such as subtitle and info files)")
+     (print "are sent to the trash as well for a given video file.\n")
+     (print "Example 1: dvr ~/Videos")
+     (print "Example 2: dvr ~/Videos/television -d\n")
      (print "Report bugs to nemo1211 at gmail.")))
  (exit 1))
 
@@ -88,10 +121,17 @@
 ;;; files, info files, etc. with shared filenames that differ only in
 ;;; their extension. This procedure moves all such similarly-named
 ;;; files to the trash for you. You only need to specify one file
-;;; (video-path) to move them all.
+;;; "video-path" to move them all.
 (define (trash-video video-path)
-  (let ((wild-files (pathname-replace-extension video-path "*")))
-    (system (conc "mv " wild-files " " trash-path))))
+  (let ((video-files
+	 (find-files (pathname-directory video-path) 
+		     test: 
+		     (conc ".*" (regexp-escape
+				 (pathname-file video-path)) ".*"))))
+    (for-each (lambda (myfile)
+		(rename-file myfile
+			     (pathname-replace-directory myfile trash-path)))
+	      video-files)))
 
 ;;; You can print the available files found with (file-list) using
 ;;; this procedure. If numberp is true, each video file printed is
@@ -212,9 +252,5 @@
 (receive (options operands)
     (args:parse (command-line-arguments) opts)
   (handle-exceptions exn (usage) (main)))
-
-;;; This gets things done
-;; (main)
-
 
 ;;; end of file dvr.scm
