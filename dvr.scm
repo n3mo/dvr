@@ -28,7 +28,9 @@
 ;;; This program provides a simple and efficient command line
 ;;; interface for quickly listing and managing video files stored in
 ;;; nested directories on a file system. Run dvr.scm -h for
-;;; information on how to use the program.
+;;; information on how to use the program. For up to date information,
+;;; see the github page for this program at
+;;; https://github.com/n3mo/dvr 
 
 (require-extension shell)
 (require-extension args)
@@ -96,13 +98,13 @@
      (print "dvr prints a recursive list of all video files")
      (print "available in [directory]. By including the -d option,")
      (print "dvr allows for interactive deletion of video files.")
-     (print "Files are moved to the trash.\n")
+     (print "'Deleted' files are moved to the trash.\n")
      (print "dvr treats collections of related files as a single unit.")
      (print "Accompanying files (such as subtitle and info files)")
      (print "are sent to the trash as well for a given video file.\n")
      (print "Example 1: dvr ~/Videos")
      (print "Example 2: dvr ~/Videos/television -d\n")
-     (print "Report bugs to nemo1211 at gmail.")))
+     (print "Report bugs to vanhorn.nm at gmail.")))
  (exit 1))
 
 ;;; This does all the heavy lifting. It recursively scans the supplied

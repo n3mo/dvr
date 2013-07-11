@@ -1,7 +1,7 @@
 dvr
 ===
 
-A tool for quickly listing and managing video files spread across a file system. The program quickly searches (recursively) for any video files within a specified file system. The resulting list is printed to the terminal in sorted order, followed by summary statistics (the number of files found, their total size, and the remaining available space on the HDD). Files can also be quickly moved to the trash. When trashing videos, the program also trashes files in the same directory with the same name (but different extensions). This allows the user trash all subtitle and related info files along with the video file in one easy step.
+A tool for quickly listing and managing video files spread across a file system. The program quickly searches (recursively) for any video files within a specified file system. The resulting list is printed to the terminal in sorted order, followed by summary statistics (the number of files found, their total size, and the remaining available space on the HDD). Files can also be quickly moved to the trash. When trashing videos, the program also trashes files in the same directory with the same name (but different extensions). This allows the user to trash all subtitle and related info files along with the video file in one easy step.
 
 Installation
 ============
@@ -14,7 +14,11 @@ Currently, this software is not bundled as a self-contained package. Thus, you w
 Additionally, you will need the following [Eggs](http://wiki.call-cc.org/eggs) installed:
 * shell
 * args
+
+dvr also uses the following Units:
 * posix
+* regex
+* files
 
 Interpreted
 -----------
