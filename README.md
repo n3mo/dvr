@@ -9,6 +9,8 @@ Videos selected for play are opened by the default video player on your system. 
 
 Files can also be quickly moved to the trash. When trashing videos, the program also trashes files in the same directory with the same name but different extensions. This allows the user to trash all subtitle and related info files along with the video file in one easy step.
 
+Performance is fast on my relatively old linux machine (approximately 0.061 seconds of real time using a compiled version on around 100 videos spread across 100+ directories). It seems to scale well, but expect poor performance if you, say, target your entire home directory containing many hundreds of gigs spread across hundreds or thousands of directories. 
+
 Installation
 ============
 
