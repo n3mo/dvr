@@ -1,7 +1,13 @@
 dvr
 ===
 
-A tool for quickly listing and managing video files spread across a file system. The program quickly searches (recursively) for any video files within a specified file system. The resulting list is printed to the terminal in sorted order, followed by summary statistics (the number of files found, their total size, and the remaining available space on the HDD). Files can also be quickly moved to the trash. When trashing videos, the program also trashes files in the same directory with the same name (but different extensions). This allows the user to trash all subtitle and related info files along with the video file in one easy step.
+A tool for quickly listing and managing video files spread across a file system. The program quickly searches (recursively) for any video files within a specified file system. The resulting list is printed to the terminal in sorted order, followed by summary statistics (the number of files found, their total size, and the remaining available space on the HDD).
+
+By including one of several options, you can also manage your video library. Currently, this includes two options: playing videos and trashing videos. An interactive interface allows for quick selection of videos, allowing for easy selection of multiple files for deletion.
+
+Videos selected for play are opened by the default video player on your system. This functionality is supported on linux and OS X.
+
+Files can also be quickly moved to the trash. When trashing videos, the program also trashes files in the same directory with the same name but different extensions. This allows the user to trash all subtitle and related info files along with the video file in one easy step.
 
 Installation
 ============
@@ -42,6 +48,10 @@ Assuming you have compiled to the file "dvr", usage is as follows (if you would 
 The expected syntax is `dvr /path/to/videos`
 
 If the optional path is unspecified, the default path "~/media/Television" is used.
+
+To interactively select video files to watch, use the play option:
+
+`dvr ~/Videos -p`
 
 To interactively trash video files (and their related subtitle & info files), use the delete option:
 

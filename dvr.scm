@@ -81,10 +81,12 @@
 ;;; following equivalent options available at runtime: -h, -help, --h,
 ;;; --help. These are used by the "args" egg.
 (define opts
- (list (args:make-option (d delete) #:none "Delete file(s)"
-         (delete-videos))
-       (args:make-option (h help)   #:none "Help information"
-         (usage))))
+  (list (args:make-option (p play) #:none "Play file"
+			  (play-video))
+	(args:make-option (d delete) #:none "Delete file(s)"
+			  (delete-videos))
+	(args:make-option (h help)   #:none "Help information"
+			  (usage))))
 
 ;;; This procedure is called whenever the user specifies the help
 ;;; option at runtime OR whenever an unexpected command line option or
@@ -102,8 +104,12 @@
      (print "dvr treats collections of related files as a single unit.")
      (print "Accompanying files (such as subtitle and info files)")
      (print "are sent to the trash as well for a given video file.\n")
+     (print "Videos can be played (by the system default player) by")
+     (print "including the -p option. An interface will allow for")
+     (print "interactive selection for choosing videos to watch.\n")
      (print "Example 1: dvr ~/Videos")
-     (print "Example 2: dvr ~/Videos/television -d\n")
+     (print "Example 2: dvr ~/Videos -p")
+     (print "Example 3: dvr ~/Videos/television -d\n")
      (print "Report bugs to vanhorn.nm at gmail.")))
  (exit 1))
 
@@ -134,6 +140,46 @@
 		(rename-file myfile
 			     (pathname-replace-directory myfile trash-path)))
 	      video-files)))
+
+;;; Play video files with default player. As of now, the system
+;;; default video player is determined by the shell command "open" on
+;;; OS X, and by the shell command "xdg-open" on linux.
+(define (play-video)
+  (begin
+    (define myargs (list-operands (command-line-arguments)))
+    (if (null? myargs)
+	(define video-file-paths (file-list default-path))
+	(define video-file-paths (file-list (car myargs))))
+    (newline)
+    (print-videos video-file-paths #t)
+    (newline)
+    (display "Enter file number to play (0 to abort): ")
+    (let ((sorted-videos (sort-videos-no-path video-file-paths))
+	  (target-file (string->number (read-line)))
+	  (mysystem (string-downcase (car (system-information)))))
+      (newline)
+      (if (or (not target-file)
+	      (<= target-file 0)
+	      (> target-file (length video-file-paths)))
+	  (begin
+	    (print "Process aborted.")
+	    (newline)
+	    (exit 1))
+	  (begin
+	    (printf "Playing ~s\n"
+		    (pathname-file
+		     (get-file sorted-videos target-file)))
+	    (if (string=? "darwin" mysystem)
+		(system (conc "open "
+			      (qs (normalize-pathname
+				   (get-file sorted-videos target-file)))))
+		(system (conc "xdg-open "
+			      (qs (normalize-pathname
+				   (get-file sorted-videos target-file))))))
+	    (exit 0))))))
+
+;;; This does the work on linux
+;; (system (conc "xdg-open " (qs (normalize-pathname video-path))))
 
 ;;; You can print the available files found with (file-list) using
 ;;; this procedure. If numberp is true, each video file printed is
