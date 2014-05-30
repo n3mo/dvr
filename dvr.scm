@@ -37,6 +37,7 @@
 (require-extension posix)
 (require-extension files)
 (require-extension regex)
+(require-extension srfi-13)
 
 ;;; Files ending in the following extensions will be
 ;;; included in all operations. Add accordingly
@@ -187,8 +188,8 @@
 ;;; for interactively deleting files)
 (define (print-videos file-paths #!optional (numberp #f))
   (let ((video-names 
-	 (map (lambda (path) (pathname-file path))
-	      file-paths)))
+	 (map (lambda (x) (truncate-file-name x (length file-paths)))
+	      (map (lambda (path) (pathname-file path)) file-paths))))
     (if numberp
 	;; Add numbering...
 	(let ((filecount 0))
@@ -269,6 +270,25 @@
       (newline)
       (exit 0))))
 
+;;; If s is longer than len, cut it down and add ... at the end. This
+;;; is taken from my string egg "s"
+(define (s-truncate len s)
+  (if (> (string-length s) len)
+      (let ((tmp (string->list s)))
+	(conc (list->string (take tmp (- len 3))) "..."))
+      s))
+
+;;; Truncate file name to a size less than the current terminal
+;;; width. File names that are truncated will have ... added to the
+;;; end. truncate-file-name anticipates the [1] numbering interface
+;;; and augments the absolute terminal width accordingly
+(define (truncate-file-name file-name num-files)
+  (let-values
+      (((num-rows num-cols) (terminal-size (current-output-port))))
+    (s-truncate (- num-cols
+		   (string-length (number->string num-files))
+		   2)
+		file-name)))
 
 ;;; This needs to be explicitly called for anything to happen
 ;;; at runtime. (main) is called below. 
