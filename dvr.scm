@@ -287,7 +287,7 @@
       (((num-rows num-cols) (terminal-size (current-output-port))))
     (s-truncate (- num-cols
 		   (string-length (number->string num-files))
-		   2)
+		   3)
 		file-name)))
 
 ;;; This needs to be explicitly called for anything to happen
