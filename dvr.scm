@@ -192,12 +192,15 @@
 	      (map (lambda (path) (pathname-file path)) file-paths))))
     (if numberp
 	;; Add numbering...
-	(let ((filecount 0))
+	(let ((filecount 0)
+	      (max-width (string-length (number->string (length video-names)))))
 	  (for-each
 	   (lambda (l) 
 	     (begin 
 	       (set! filecount (+ filecount 1))
-	       (display (conc "[" filecount "] "))
+	       (display
+		(conc "["
+		      (string-pad (number->string filecount) max-width) "] "))
 	       (print l)))
 	   (sort-videos video-names)))
 	;; Else don't...
